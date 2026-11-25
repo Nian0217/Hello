@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>测测你的灵魂对应哪位中国历史人物</title>
+<style>
+  :root{
+    --paper:#f4ecdc;
+    --paper-2:#efe4cd;
+    --card:#fffaf0;
+    --ink:#2b2620;
+    --ink-soft:#5c5142;
+    --cinnabar:#a8352a;
+    --cinnabar-soft:#c25b4f;
+    --dai:#35505a;
+    --gold:#b8893b;
+    --line:#dccfa9;
+    --shadow:0 18px 40px rgba(74,58,30,.18);
+    --radius:22px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 18% 12%, rgba(184,137,59,.14), transparent 42%),
+      radial-gradient(circle at 86% 88%, rgba(53,80,90,.16), transparent 46%),
+      linear-gradient(160deg,var(--paper) 0%,var(--paper-2) 100%);
+    min-height:100%;
+    display:flex;
+    justify-content:center;
+    padding:24px 16px 48px;
+  }
+  .wrap{width:100%;max-width:640px;}
+
+  /* 背景纹样 */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;
+    background-image:radial-gradient(var(--ink) 1px, transparent 1px);
+    background-size:22px 22px;
+  }
+
+  .screen{display:none;animation:fadeIn .5s ease both;}
+  .screen.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  @keyframes slideNext{from{opacity:0;transform:translateX(28px);}to{opacity:1;transform:none;}}
+  @keyframes slidePrev{from{opacity:0;transform:translateX(-28px);}to{opacity:1;transform:none;}}
+  .anim-next{animation:slideNext .35s ease both;}
+  .anim-prev{animation:slidePrev .35s ease both;}
+
+  /* ===== 首页 ===== */
+  .hero{
+    margin-top:8vh;
+    text-align:center;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:46px 30px 38px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"印";position:absolute;right:18px;bottom:14px;
+    width:64px;height:64px;border:2px solid var(--cinnabar);border-radius:10px;
+    color:var(--cinnabar);font-size:30px;display:flex;align-items:center;justify-content:center;
+    opacity:.18;transform:rotate(-8deg);
+  }
+  .seal{
+    display:inline-flex;align-items:center;gap:8px;
+    color:var(--cinnabar);letter-spacing:.35em;font-size:13px;margin-bottom:18px;
+  }
+  .seal::before,.seal::after{content:"";width:26px;height:1px;background:var(--cinnabar);opacity:.5;}
+  h1{
+    font-size:clamp(26px,6vw,38px);line-height:1.4;letter-spacing:.06em;font-weight:700;
+  }
+  h1 .accent{color:var(--cinnabar);}
+  .sub{
+    margin-top:16px;color:var(--ink-soft);font-size:15px;line-height:1.9;
+  }
+  .tag-row{margin-top:24px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .tag{
+    border:1px solid var(--line);background:var(--paper);border-radius:999px;
+    padding:7px 15px;font-size:13px;color:var(--ink-soft);
+  }
+  .btn{
+    display:inline-block;border:none;cursor:pointer;font-family:inherit;
+    background:linear-gradient(135deg,var(--cinnabar),var(--cinnabar-soft));
+    color:#fff;font-size:17px;letter-spacing:.2em;padding:15px 42px;border-radius:999px;
+    box-shadow:0 12px 24px rgba(168,53,42,.32);transition:transform .15s ease,box-shadow .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 16px 28px rgba(168,53,42,.38);}
+  .btn:active{transform:translateY(0);}
+  .btn-ghost{
+    background:transparent;color:var(--dai);border:1px solid var(--dai);
+    box-shadow:none;letter-spacing:.15em;
+  }
+  .home-actions{margin-top:32px;display:flex;flex-direction:column;gap:14px;align-items:center;}
+  .disclaimer{margin-top:22px;font-size:12px;color:#9a8d73;line-height:1.8;}
+
+  /* ===== 答题页 ===== */
+  .quiz-top{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+  .q-counter{font-size:14px;color:var(--ink-soft);letter-spacing:.1em;white-space:nowrap;}
+  .progress{flex:1;height:8px;background:rgba(120,100,60,.16);border-radius:999px;overflow:hidden;}
+  .progress-bar{
+    height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--gold),var(--cinnabar));
+    transition:width .4s ease;
+  }
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:30px 26px;
+  }
+  .q-category{font-size:12px;letter-spacing:.3em;color:var(--gold);margin-bottom:12px;}
+  .q-title{font-size:clamp(19px,4.6vw,23px);line-height:1.7;font-weight:700;margin-bottom:26px;}
+  .options{display:flex;flex-direction:column;gap:14px;}
+  .option{
+    text-align:left;font-family:inherit;cursor:pointer;
+    background:var(--paper);border:1px solid var(--line);border-radius:16px;
+    padding:17px 18px;font-size:15.5px;line-height:1.7;color:var(--ink);
+    display:flex;gap:14px;align-items:flex-start;transition:all .18s ease;
+  }
+  .option:hover{border-color:var(--gold);background:#fbf3e0;transform:translateX(4px);}
+  .option .idx{
+    flex:none;width:28px;height:28px;border-radius:8px;background:#fff;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--dai);
+  }
+  .option.selected{
+    border-color:var(--cinnabar);background:#fbece8;
+  }
+  .option.selected .idx{background:var(--cinnabar);color:#fff;border-color:var(--cinnabar);}
+  .option:disabled{cursor:default;}
+  .quiz-foot{margin-top:20px;text-align:center;font-size:12px;color:#9a8d73;}
+
+  /* ===== 结果页 ===== */
+  .result-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .result-banner{
+    padding:38px 28px 30px;text-align:center;color:#fff;position:relative;
+    background:linear-gradient(155deg,var(--dai) 0%,#22383f 100%);
+  }
+  .result-banner .type{font-size:13px;letter-spacing:.4em;opacity:.85;}
+  .result-name{font-size:clamp(32px,8vw,46px);font-weight:700;margin:10px 0 6px;letter-spacing:.08em;}
+  .result-era{font-size:14px;opacity:.85;}
+  .result-quote{
+    margin:20px auto 0;max-width:420px;font-size:16px;line-height:1.9;
+    border-top:1px solid rgba(255,255,255,.25);padding-top:18px;
+  }
+  .result-body{padding:28px 26px;display:flex;flex-direction:column;gap:22px;}
+  .block h3{
+    font-size:14px;letter-spacing:.25em;color:var(--cinnabar);margin-bottom:10px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .block h3::before{content:"";width:18px;height:1px;background:var(--cinnabar);}
+  .block p{font-size:15px;line-height:1.9;color:var(--ink);}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px;color:var(--ink-soft);}
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .meta-box{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;}
+  .meta-box .k{font-size:12px;letter-spacing:.2em;color:var(--gold);margin-bottom:8px;}
+  .meta-box .v{font-size:14.5px;line-height:1.8;}
+  .egg{
+    background:#fbf3e0;border:1px dashed var(--gold);border-radius:16px;padding:16px;
+    font-size:14px;line-height:1.8;color:var(--ink-soft);
+  }
+  .result-actions{display:flex;flex-direction:column;gap:14px;margin-top:8px;}
+  .share-tip{text-align:center;font-size:12px;color:#9a8d73;margin-top:14px;line-height:1.8;}
+
+  @media (max-width:480px){
+    body{padding:16px 12px 40px;}
+    .hero{padding:36px 22px 30px;margin-top:4vh;}
+    .card,.result-body{padding:24px 20px;}
+    .meta-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 首页 -->
+  <section id="home" class="screen active">
+    <div class="hero">
+      <div class="seal">灵魂人物志</div>
+      <h1>测测你的灵魂<br/>对应哪位<span class="accent">中国历史人物</span></h1>
+      <p class="sub">不问史书典故，只看你日常的习惯、处事、社交与情绪。<br/>40 道生活化小题，照见你骨子里的性情与风骨。</p>
+      <div class="tag-row">
+        <span class="tag">谋士</span><span class="tag">帝王</span><span class="tag">文人</span>
+        <span class="tag">侠客</span><span class="tag">诗人</span><span class="tag">将领</span><span class="tag">隐士</span>
+      </div>
+      <div class="home-actions">
+        <button class="btn" id="startBtn">开始测试</button>
+        <p class="disclaimer">本测试为趣味人格娱乐，非历史考证，亦非专业心理诊断。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 答题页 -->
+  <section id="quiz" class="screen">
+    <div class="quiz-top">
+      <span class="q-counter" id="counter">1 / 40</span>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+    <div class="card" id="quizCard">
+      <div class="q-category" id="qCategory"></div>
+      <div class="q-title" id="qTitle"></div>
+      <div class="options" id="options"></div>
+    </div>
+    <p class="quiz-foot">选择最贴近你真实状态的一项，无需过多权衡</p>
+  </section>
+
+  <!-- 结果页 -->
+  <section id="result" class="screen">
+    <div class="result-card">
+      <div class="result-banner">
+        <div class="type" id="rType"></div>
+        <div class="result-name" id="rName"></div>
+        <div class="result-era" id="rEra"></div>
+        <div class="result-quote" id="rQuote"></div>
+      </div>
+      <div class="result-body">
+        <div class="block">
+          <h3>性格特点</h3>
+          <div class="chips" id="rTraits"></div>
+        </div>
+        <div class="block">
+          <h3>为何是 TA</h3>
+          <p id="rReason"></p>
+        </div>
+        <div class="meta-grid">
+          <div class="meta-box">
+            <div class="k">隐藏优势</div>
+            <div class="v" id="rStrength"></div>
+          </div>
+          <div class="meta-box">
+            <div class="k">趣味彩蛋</div>
+            <div class="v" id="rEgg"></div>
+          </div>
+        </div>
+        <div class="egg" id="rEggFull"></div>
+        <div class="result-actions">
+          <button class="btn" id="restartBtn">重新测试</button>
+          <button class="btn btn-ghost" id="copyBtn">复制结果文案，去分享</button>
+        </div>
+        <p class="share-tip">结果页适合截图保存，分享至朋友圈 / 小红书 · 仅供娱乐</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const PROFILES = {
+  strategist: {
+    type: "谋士",
+    name: "诸葛亮",
+    era: "三国 · 蜀汉丞相",
+    traits: ["冷静缜密", "善于谋划", "眼光长远", "临危不乱", "深谋远虑"],
+    reason: "你习惯先想清楚再行动，擅长在复杂局面里梳理脉络、找出最优解。旁人还在慌乱时，你已经在脑中推演了好几步，这份定力与条理，正是谋臣之风。",
+    strength: "越是局面混乱，你越能抽丝剥茧、化繁为简；你给出的判断往往经得起推敲。",
+    egg: "你的手机里大概率存着几个「备用方案」，凡事都留了后手。",
+    quote: "运筹帷幄之中，决胜千里之外。"
+  },
+  emperor: {
+    type: "帝王",
+    name: "李世民",
+    era: "唐 · 贞观天子",
+    traits: ["胸怀格局", "敢作敢当", "凝聚人心", "能屈能伸", "有号召力"],
+    reason: "你天生带有一股担当与气场，愿意为大局扛事，也懂得顾及身边人的感受。遇到需要拍板的时刻，你常常自然而然地站出来，这是领袖的格局。",
+    strength: "你能屈能伸，压力越大越有主见，也容易让周围的人愿意跟随你。",
+    egg: "朋友聚会或团队协作里，你常常是那个最后拍板、安排大局的人。",
+    quote: "海纳百川，有容乃大；胸藏丘壑，可掌风云。"
+  },
+  scholar: {
+    type: "文人",
+    name: "苏轼",
+    era: "北宋 · 东坡居士",
+    traits: ["豁达通透", "情趣丰富", "审美在线", "松弛乐观", "共情力强"],
+    reason: "你对生活有自己的讲究，善于在平凡日子里发现滋味，境遇起伏也打不垮你的心境。这份通达与热爱，正是文人墨客的洒脱底色。",
+    strength: "你共情力强，能把苦日子也过出滋味，身边人很容易被你的松弛感染。",
+    egg: "你的收藏夹里，多半塞满了美食、游记、展讯和各种治愈系内容。",
+    quote: "一蓑烟雨任平生，也无风雨也无晴。"
+  },
+  swordsman: {
+    type: "侠客",
+    name: "荆轲",
+    era: "战国 · 义士",
+    traits: ["重情重义", "果敢率性", "侠骨丹心", "敢作敢当", "讲义气"],
+    reason: "你是行动派，答应的事就放在心上，看不惯不平事，也愿意为认可的人两肋插刀。这份赤诚与担当，正是行走江湖的侠客气概。",
+    strength: "关键时刻你敢站出来，朋友对你有极强的信任感；你的一诺千金，很少有人能替代。",
+    egg: "只要是你答应过的事，哪怕再麻烦，也会想方设法做到。",
+    quote: "剑胆琴心，一诺千金；路见不平，拔刀相助。"
+  },
+  poet: {
+    type: "诗人",
+    name: "李清照",
+    era: "宋 · 易安居士",
+    traits: ["细腻敏感", "情感丰沛", "表达力强", "感知敏锐", "心思柔软"],
+    reason: "你内心戏丰富，善于捕捉旁人忽略的情绪与细节，一句歌词、一段风景都能轻易击中你。这份丰沛的感受力，正是诗人的灵魂。",
+    strength: "你的感受力与表达力是天赋，无论创作还是共情，都能精准触达人心。",
+    egg: "你常常在某个瞬间被一句话、一幅画面打动，久久难以平静。",
+    quote: "心事寄风月，落笔皆深情。"
+  },
+  general: {
+    type: "将领",
+    name: "岳飞",
+    era: "南宋 · 岳王",
+    traits: ["坚毅果决", "执行力强", "目标感重", "自律可靠", "敢于攻坚"],
+    reason: "你认准目标就埋头攻坚，扛得住压力与硬仗，责任感刻在骨子里。交托给你的事情，很少掉链子，这正是将领的沉稳与刚硬。",
+    strength: "你自律而可靠，越是艰难的任务越能坚持到底，是团队里最让人放心的后盾。",
+    egg: "你的待办清单比谁都长，完成率也往往比谁都高。",
+    quote: "壮志如山，号令如山；一往无前，百炼成钢。"
+  },
+  hermit: {
+    type: "隐士",
+    name: "陶渊明",
+    era: "东晋 · 靖节先生",
+    traits: ["淡泊自在", "向内求索", "不慕喧嚣", "清醒自持", "节奏从容"],
+    reason: "你需要独处来回血，重视内心安宁胜过热闹浮华，不轻易被潮流裹挟。这份清醒与从容，正是隐士归园田居的心性。",
+    strength: "你清醒自持，有自己的节奏与准则，外界的喧嚣很难真正动摇你。",
+    egg: "难得的周末，你最想做的事往往是——一个人安安静静待着。",
+    quote: "采菊东篱下，悠然见南山。"
+  }
+};
+
+const QUESTIONS = [
+  { cat: "日常习惯", q: "周末终于空下来，你最想怎么过？", options: [
+    { t: "在家规划下周安排、整理思路", s: { strategist: 2, scholar: 1 } },
+    { t: "约一群朋友聚会，热闹一场", s: { emperor: 2, hermit: 1 } },
+    { t: "读本书、看展，或研究一道菜", s: { scholar: 2, strategist: 1 } },
+    { t: "出门徒步，或找个安静地方待着", s: { hermit: 2, swordsman: 1 } }
+  ]},
+  { cat: "处事方式", q: "团队遇到棘手问题，你通常是？", options: [
+    { t: "先分析利弊，拿出几套方案", s: { strategist: 2, poet: 1 } },
+    { t: "站出来牵头，带大家定方向", s: { emperor: 2, general: 1 } },
+    { t: "调和气氛，照顾每个人的感受", s: { scholar: 2, strategist: 1 } },
+    { t: "直接上手，把最难的活扛了", s: { general: 2, emperor: 1 } }
+  ]},
+  { cat: "社交模式", q: "朋友向你倾诉烦恼，你的第一反应是？", options: [
+    { t: "帮他梳理问题，给出建议", s: { strategist: 2, poet: 1 } },
+    { t: "陪他一起吐槽，给他撑腰", s: { swordsman: 2, hermit: 1 } },
+    { t: "先共情他的情绪，耐心听他说", s: { poet: 2, strategist: 1 } },
+    { t: "劝他先放下，顺其自然就好", s: { hermit: 2, general: 1 } }
+  ]},
+  { cat: "处事方式", q: "买东西做决定，你更偏向？", options: [
+    { t: "对比参数攻略，想清楚再下手", s: { strategist: 2, scholar: 1 } },
+    { t: "看眼缘和喜欢，果断买下", s: { swordsman: 2, hermit: 1 } },
+    { t: "挑有格调、有质感的那件", s: { scholar: 2, strategist: 1 } },
+    { t: "够用就行，懒得纠结", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "情绪反应", q: "遇到突发变故，你内心更接近？", options: [
+    { t: "快速判断形势，寻找对策", s: { strategist: 2, scholar: 1 } },
+    { t: "稳住场面，先安顿好大家", s: { emperor: 2, hermit: 1 } },
+    { t: "有点慌，需要时间慢慢消化", s: { poet: 2, strategist: 1 } },
+    { t: "不服输，硬扛过去再说", s: { general: 2, swordsman: 1 } }
+  ]},
+  { cat: "日常习惯", q: "你更喜欢的工作 / 学习节奏是？", options: [
+    { t: "谋定而后动，计划周密", s: { strategist: 2, scholar: 1 } },
+    { t: "目标明确，一步步攻坚", s: { general: 2, hermit: 1 } },
+    { t: "随性而为，灵感来了再做", s: { poet: 2, strategist: 1 } },
+    { t: "按自己节奏，不被人催", s: { hermit: 2, swordsman: 1 } }
+  ]},
+  { cat: "社交模式", q: "在人群里，你通常是？", options: [
+    { t: "观察者，默默看全场", s: { strategist: 2, poet: 1 } },
+    { t: "气氛中心，带动大家", s: { emperor: 2, hermit: 1 } },
+    { t: "温和捧场，照顾氛围", s: { scholar: 2, strategist: 1 } },
+    { t: "安静待在角落", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "情绪反应", q: "你最受不了别人哪一点？", options: [
+    { t: "逻辑混乱、拍脑袋做决定", s: { strategist: 2, poet: 1 } },
+    { t: "不守信用、不够担当", s: { swordsman: 2, hermit: 1 } },
+    { t: "粗糙敷衍、缺乏审美", s: { scholar: 2, strategist: 1 } },
+    { t: "喧嚣浮躁、强人所难", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "兴趣偏好", q: "闲暇时你更爱看什么内容？", options: [
+    { t: "策略、历史、商业分析", s: { strategist: 2, poet: 1 } },
+    { t: "冒险、武侠、热血故事", s: { swordsman: 2, hermit: 1 } },
+    { t: "文学、诗词、艺术美食", s: { scholar: 2, strategist: 1 } },
+    { t: "自然、山水、慢生活", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "处事方式", q: "面对一个大目标，你的方式是？", options: [
+    { t: "拆解成步骤，步步为营", s: { strategist: 2, scholar: 1 } },
+    { t: "喊出口号，拉人一起干", s: { emperor: 2, swordsman: 1 } },
+    { t: "跟着兴趣和感觉走", s: { poet: 2, strategist: 1 } },
+    { t: "先想清楚值不值得，再决定投入", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "社交模式", q: "收到一件不合心意的礼物，你会？", options: [
+    { t: "委婉说明，找实用替代", s: { strategist: 2, poet: 1 } },
+    { t: "当面开心收下，记下人情", s: { emperor: 2, swordsman: 1 } },
+    { t: "感动于心意，好好珍藏", s: { poet: 2, strategist: 1 } },
+    { t: "礼貌收下，放到一边", s: { hermit: 2, scholar: 1 } }
+  ]},
+  { cat: "兴趣偏好", q: "旅行时你更偏好？", options: [
+    { t: "做好攻略，路线清晰", s: { strategist: 2, scholar: 1 } },
+    { t: "去热闹有代表性的地方打卡", s: { emperor: 2, hermit: 1 } },
+    { t: "随性闲逛，偶遇惊喜", s: { poet: 2, general: 1 } },
+    { t: "找僻静山水，放松身心", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "社交模式", q: "朋友评价你，最常说的是？", options: [
+    { t: "聪明、靠谱、想得周全", s: { strategist: 2, hermit: 1 } },
+    { t: "大气、有领导范儿", s: { emperor: 2, general: 1 } },
+    { t: "温柔、有趣、有才华", s: { scholar: 2, strategist: 1 } },
+    { t: "仗义、够朋友", s: { swordsman: 2, hermit: 1 } }
+  ]},
+  { cat: "情绪反应", q: "被人误解时，你通常？", options: [
+    { t: "摆事实讲道理，当面澄清", s: { strategist: 2, scholar: 1 } },
+    { t: "懒得解释，懂我的人自然懂", s: { hermit: 2, swordsman: 1 } },
+    { t: "委屈很久，情绪低落", s: { poet: 2, strategist: 1 } },
+    { t: "直接把话当面说开", s: { swordsman: 2, general: 1 } }
+  ]},
+  { cat: "日常习惯", q: "布置自己的小空间，你喜欢？", options: [
+    { t: "整洁有序，功能齐全", s: { general: 2, poet: 1 } },
+    { t: "有气派、有格调、待客体面", s: { emperor: 2, swordsman: 1 } },
+    { t: "堆满书、摆件和生活情趣", s: { scholar: 2, strategist: 1 } },
+    { t: "简单朴素，舒服自在", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "处事方式", q: "面对规则与不公，你倾向？", options: [
+    { t: "研究规则，在规则内破解", s: { strategist: 2, poet: 1 } },
+    { t: "挺身而出，主持公道", s: { swordsman: 2, hermit: 1 } },
+    { t: "保持距离，不掺和进去", s: { hermit: 2, strategist: 1 } },
+    { t: "坚持原则，硬碰到底", s: { general: 2, emperor: 1 } }
+  ]},
+  { cat: "兴趣偏好", q: "你更羡慕哪种生活？", options: [
+    { t: "运筹帷幄、以智取胜", s: { strategist: 2, scholar: 1 } },
+    { t: "建功立业、众人敬仰", s: { general: 2, emperor: 1 } },
+    { t: "游山玩水、自在随心", s: { scholar: 2, strategist: 1 } },
+    { t: "快意恩仇、洒脱不羁", s: { swordsman: 2, emperor: 1 } }
+  ]},
+  { cat: "处事方式", q: "团队分工，你最想承担？", options: [
+    { t: "出主意、做决策的军师角色", s: { strategist: 2, poet: 1 } },
+    { t: "统筹全局、带领团队的首领", s: { emperor: 2, hermit: 1 } },
+    { t: "提供创意和氛围的角色", s: { poet: 2, strategist: 1 } },
+    { t: "冲锋陷阵、执行落地的角色", s: { swordsman: 2, hermit: 1 } }
+  ]},
+  { cat: "情绪反应", q: "情绪低落时，你怎么恢复？", options: [
+    { t: "分析原因，想办法解决", s: { strategist: 2, poet: 1 } },
+    { t: "找人聊、找人陪，热闹一下", s: { emperor: 2, hermit: 1 } },
+    { t: "听歌写作，沉浸爱好里自愈", s: { poet: 2, strategist: 1 } },
+    { t: "独处安静，慢慢消化", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "处事方式", q: "你认为成功最重要的是？", options: [
+    { t: "谋略与判断", s: { strategist: 2, scholar: 1 } },
+    { t: "格局与人心", s: { emperor: 2, hermit: 1 } },
+    { t: "内心丰盈与热爱", s: { scholar: 2, strategist: 1 } },
+    { t: "坚守与行动力", s: { general: 2, emperor: 1 } }
+  ]},
+  { cat: "情绪反应", q: "看到路见不平的场景，你会？", options: [
+    { t: "先观察形势，想稳妥办法介入", s: { strategist: 2, poet: 1 } },
+    { t: "上前直接帮忙", s: { swordsman: 2, general: 1 } },
+    { t: "心疼当事人，情绪被牵动", s: { poet: 2, strategist: 1 } },
+    { t: "避而远之，不惹事端", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "日常习惯", q: "你手机里最常用的 App 类型是？", options: [
+    { t: "效率、笔记、地图工具", s: { strategist: 2, poet: 1 } },
+    { t: "社交、资讯、群组沟通", s: { emperor: 2, hermit: 1 } },
+    { t: "阅读、音乐、影视文艺", s: { poet: 2, strategist: 1 } },
+    { t: "户外、冥想、生活记录", s: { hermit: 2, general: 1 } }
+  ]},
+  { cat: "处事方式", q: "做一件事之前，你最在意？", options: [
+    { t: "成功率和最优路径", s: { strategist: 2, hermit: 1 } },
+    { t: "有没有意义、值不值得", s: { emperor: 2, general: 1 } },
+    { t: "有没有美感和乐趣", s: { scholar: 2, strategist: 1 } },
+    { t: "是否符合自己本心", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "社交模式", q: "朋友遇到大事找你拿主意，你会？", options: [
+    { t: "给他分析各种选择的利弊", s: { strategist: 2, scholar: 1 } },
+    { t: "鼓励他，并帮他撑场面", s: { emperor: 2, swordsman: 1 } },
+    { t: "陪他感受，尊重他的节奏", s: { poet: 2, strategist: 1 } },
+    { t: "推他一把，赶紧行动", s: { general: 2, emperor: 1 } }
+  ]},
+  { cat: "情绪反应", q: "你向往的自我状态是？", options: [
+    { t: "清醒睿智，掌控局面", s: { strategist: 2, poet: 1 } },
+    { t: "坚定果敢，百折不挠", s: { general: 2, hermit: 1 } },
+    { t: "浪漫丰盛，感知美好", s: { poet: 2, strategist: 1 } },
+    { t: "从容淡泊，内心安宁", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "社交模式", q: "集体活动中若出现意见分歧，你？", options: [
+    { t: "摆事实，用道理说服", s: { strategist: 2, poet: 1 } },
+    { t: "协调各方，寻求共识", s: { emperor: 2, hermit: 1 } },
+    { t: "保留自己看法，不争执", s: { hermit: 2, strategist: 1 } },
+    { t: "坚持立场，寸步不让", s: { general: 2, emperor: 1 } }
+  ]},
+  { cat: "兴趣偏好", q: "你最容易被哪种人吸引？", options: [
+    { t: "聪明有谋略、深不可测", s: { strategist: 2, poet: 1 } },
+    { t: "大气果敢、有担当", s: { emperor: 2, hermit: 1 } },
+    { t: "温柔有趣、有才华", s: { scholar: 2, strategist: 1 } },
+    { t: "洒脱仗义、性情中人", s: { swordsman: 2, emperor: 1 } }
+  ]},
+  { cat: "兴趣偏好", q: "假如拥有一种超能力，你想要？", options: [
+    { t: "看透局势、预知走向", s: { strategist: 2, scholar: 1 } },
+    { t: "带领大家改变局面", s: { emperor: 2, hermit: 1 } },
+    { t: "感知万物、表达内心", s: { poet: 2, strategist: 1 } },
+    { t: "来去自由、不受拘束", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "社交模式", q: "日常表达想法时，你偏向？", options: [
+    { t: "条理清晰，逻辑严密", s: { strategist: 2, scholar: 1 } },
+    { t: "直接有力，掷地有声", s: { emperor: 2, hermit: 1 } },
+    { t: "委婉细腻，注重气氛", s: { poet: 2, strategist: 1 } },
+    { t: "言简意赅，点到为止", s: { hermit: 2, general: 1 } }
+  ]},
+  { cat: "处事方式", q: "面对新鲜感，你的态度是？", options: [
+    { t: "评估风险后再尝试", s: { strategist: 2, poet: 1 } },
+    { t: "乐于尝试，带动别人一起", s: { emperor: 2, hermit: 1 } },
+    { t: "被美好事物吸引就去体验", s: { poet: 2, strategist: 1 } },
+    { t: "守着熟悉的安稳就好", s: { hermit: 2, general: 1 } }
+  ]},
+  { cat: "情绪反应", q: "你对「面子 / 口碑」的看法是？", options: [
+    { t: "实力到位，口碑自然来", s: { strategist: 2, poet: 1 } },
+    { t: "很在意，希望被认可尊重", s: { emperor: 2, scholar: 1 } },
+    { t: "更在意自己是否满意", s: { scholar: 2, strategist: 1 } },
+    { t: "无所谓，不在乎他人眼光", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "日常习惯", q: "处理烦琐重复的事，你？", options: [
+    { t: "想办法优化流程、省事", s: { strategist: 2, poet: 1 } },
+    { t: "咬牙扛住，按要求做完", s: { general: 2, hermit: 1 } },
+    { t: "找到里面的小乐趣调剂", s: { scholar: 2, strategist: 1 } },
+    { t: "能躲就躲，嫌烦", s: { hermit: 2, general: 1 } }
+  ]},
+  { cat: "社交模式", q: "你理想中的伙伴关系是？", options: [
+    { t: "彼此信任，分工互补", s: { strategist: 2, poet: 1 } },
+    { t: "并肩作战，共担风雨", s: { general: 2, hermit: 1 } },
+    { t: "灵魂相通，互相懂得", s: { poet: 2, strategist: 1 } },
+    { t: "各自独立，留白自在", s: { hermit: 2, general: 1 } }
+  ]},
+  { cat: "兴趣偏好", q: "读到一首好诗、看到一幅好画，你会？", options: [
+    { t: "分析它好在哪、手法如何", s: { strategist: 2, scholar: 1 } },
+    { t: "心潮澎湃，想分享给所有人", s: { emperor: 2, swordsman: 1 } },
+    { t: "沉浸情绪，反复回味", s: { poet: 2, strategist: 1 } },
+    { t: "点头赞叹，转身放下", s: { scholar: 2, emperor: 1 } }
+  ]},
+  { cat: "情绪反应", q: "压力大的时候，你最典型的状态是？", options: [
+    { t: "更冷静，大脑高速运转想办法", s: { strategist: 2, poet: 1 } },
+    { t: "越压越强，硬撑着推进", s: { general: 2, swordsman: 1 } },
+    { t: "情绪敏感，容易内耗", s: { poet: 2, strategist: 1 } },
+    { t: "想逃离喧嚣，躲起来回血", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "处事方式", q: "你做事的驱动力更多来自？", options: [
+    { t: "理性判断与长远目标", s: { strategist: 2, poet: 1 } },
+    { t: "责任与荣誉", s: { general: 2, emperor: 1 } },
+    { t: "热爱与美感", s: { poet: 2, strategist: 1 } },
+    { t: "本心与自在", s: { hermit: 2, emperor: 1 } }
+  ]},
+  { cat: "兴趣偏好", q: "如果穿越到古代，你最想当？", options: [
+    { t: "运筹帷幄的军师谋臣", s: { strategist: 2, scholar: 1 } },
+    { t: "执掌一方的王侯将相", s: { emperor: 2, hermit: 1 } },
+    { t: "吟诗作画的文人雅士", s: { scholar: 2, strategist: 1 } },
+    { t: "行走江湖的侠士隐士", s: { swordsman: 2, general: 1 } }
+  ]},
+  { cat: "情绪反应", q: "别人最容易误解你的一点是？", options: [
+    { t: "以为你冷淡，其实你在观察思考", s: { strategist: 2, scholar: 1 } },
+    { t: "以为你强势，其实你在扛事", s: { emperor: 2, hermit: 1 } },
+    { t: "以为你矫情，其实你感受细腻", s: { poet: 2, strategist: 1 } },
+    { t: "以为你孤僻，其实你重情", s: { swordsman: 2, emperor: 1 } }
+  ]},
+  { cat: "社交模式", q: "你最看重朋友身上的什么？", options: [
+    { t: "聪明可靠，能聊得来", s: { strategist: 2, scholar: 1 } },
+    { t: "担当义气，值得托付", s: { emperor: 2, general: 1 } },
+    { t: "真诚有趣，懂得欣赏", s: { poet: 2, strategist: 1 } },
+    { t: "踏实自律，并肩前行", s: { general: 2, emperor: 1 } }
+  ]},
+  { cat: "兴趣偏好", q: "用一句话形容你想要的人生？", options: [
+    { t: "看透世事，胸有成竹", s: { strategist: 2, poet: 1 } },
+    { t: "建功立业，不负平生", s: { general: 2, hermit: 1 } },
+    { t: "饱览风月，尽兴而归", s: { scholar: 2, strategist: 1 } },
+    { t: "归去来兮，自在随心", s: { hermit: 2, swordsman: 1 } }
+  ]}
+];
+
+const MAX_POSSIBLE = {"strategist":117,"emperor":77,"scholar":52,"swordsman":37,"poet":66,"general":46,"hermit":85};
+
+const TOTAL = QUESTIONS.length;
+let current = 0;
+let scores = {};
+let answering = false;
+
+const $ = (id) => document.getElementById(id);
+
+function resetState(){
+  current = 0;
+  scores = Object.fromEntries(Object.keys(PROFILES).map(k => [k, 0]));
+  answering = false;
+}
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+function startQuiz(){
+  resetState();
+  showScreen("quiz");
+  renderQuestion("next");
+}
+
+function renderQuestion(dir){
+  answering = false;
+  const item = QUESTIONS[current];
+  $("counter").textContent = (current + 1) + " / " + TOTAL;
+  $("progressBar").style.width = (current / TOTAL * 100) + "%";
+  $("qCategory").textContent = item.cat;
+  $("qTitle").textContent = item.q;
+
+  const box = $("options");
+  box.innerHTML = "";
+  const labels = ["A","B","C","D"];
+  item.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "option";
+    btn.innerHTML = '<span class="idx">' + labels[i] + '</span><span>' + opt.t + '</span>';
+    btn.addEventListener("click", () => chooseOption(btn, opt));
+    box.appendChild(btn);
+  });
+
+  const card = $("quizCard");
+  card.classList.remove("anim-next","anim-prev");
+  void card.offsetWidth;
+  card.classList.add(dir === "prev" ? "anim-prev" : "anim-next");
+}
+
+function chooseOption(btn, opt){
+  if (answering) return;
+  answering = true;
+  btn.classList.add("selected");
+  Object.entries(opt.s).forEach(([k, v]) => { scores[k] += v; });
+
+  setTimeout(() => {
+    if (current < TOTAL - 1){
+      current++;
+      renderQuestion("next");
+    } else {
+      $("progressBar").style.width = "100%";
+      finish();
+    }
+  }, 260);
+}
+
+function determineResult(){
+  // 归一化：得分占该类型理论最大分的比例，消除题目配额不均
+  let bestKey = Object.keys(PROFILES)[0];
+  let bestRatio = -1;
+  Object.keys(PROFILES).forEach(k => {
+    const ratio = scores[k] / MAX_POSSIBLE[k];
+    if (ratio > bestRatio){ bestRatio = ratio; bestKey = k; }
+  });
+  return bestKey;
+}
+
+function finish(){
+  const key = determineResult();
+  const p = PROFILES[key];
+
+  $("rType").textContent = p.type;
+  $("rName").textContent = p.name;
+  $("rEra").textContent = p.era;
+  $("rQuote").textContent = "「" + p.quote + "」";
+  $("rTraits").innerHTML = p.traits.map(t => '<span class="chip">' + t + '</span>').join("");
+  $("rReason").textContent = p.reason;
+  $("rStrength").textContent = p.strength;
+  $("rEgg").textContent = p.egg;
+  $("rEggFull").textContent = "🔍 隐藏彩蛋：" + p.egg;
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  showScreen("result");
+}
+
+function buildShareText(){
+  const key = determineResult();
+  const p = PROFILES[key];
+  return "【灵魂人物测试】\n我对应到的历史人物是：" + p.name + "（" + p.type + "）\n" +
+    "性格：" + p.traits.join("、") + "\n" +
+    "专属文案：「" + p.quote + "」\n" +
+    "快来测测你是哪位历史人物吧～";
+}
+
+$("startBtn").addEventListener("click", startQuiz);
+$("restartBtn").addEventListener("click", () => { showScreen("home"); });
+$("copyBtn").addEventListener("click", async () => {
+  const text = buildShareText();
+  try {
+    await navigator.clipboard.writeText(text);
+    $("copyBtn").textContent = "已复制，快去粘贴分享吧";
+    setTimeout(() => { $("copyBtn").textContent = "复制结果文案，去分享"; }, 2000);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); document.body.removeChild(ta);
+    $("copyBtn").textContent = "已复制，快去粘贴分享吧";
+    setTimeout(() => { $("copyBtn").textContent = "复制结果文案，去分享"; }, 2000);
+  }
+});
+</script>
+</body>
+</html>
